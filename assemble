@@ -1,0 +1,24 @@
+#!/bin/sh
+
+cat <<EOF > /tmp/cert1.crt
+-----BEGIN CERTIFICATE-----
+................................................................
+................................................................
+-----END CERTIFICATE-----
+EOF
+
+cat <<EOF > /tmp/cert2.crt
+-----BEGIN CERTIFICATE-----
+................................................................
+................................................................
+-----END CERTIFICATE-----
+EOF
+
+cp $JAVA_HOME/jre/lib/security/cacerts /tmp/cacerts
+
+chmod +w /tmp/cacerts
+
+keytool -importcert -noprompt -storepass changeit -file /tmp/cert1.crt -alias cert1 -keystore /tmp/cacerts
+keytool -importcert -noprompt -storepass changeit -file /tmp/cert2.crt -alias cert2 -keystore /tmp/cacerts
+
+/usr/local/s2i/assemble
