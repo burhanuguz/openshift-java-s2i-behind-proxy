@@ -1,4 +1,4 @@
-# Openshift 4.5 s2i behind Corporate Proxy (JBoss EAP 7.2 from Developer Catalog)
+# Openshift s2i behind Corporate Proxy (JBoss EAP 7.2 from Developer Catalog)
 
 ## Prerequisites
 - Openshift Cluster behind proxy
