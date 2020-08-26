@@ -5,7 +5,7 @@
 - Internal Image registry (to access the images you built in cluster)
 
 ## Overview
-When starting JAVA image build from **Developer Catalog (e.g JBoss EAP 7.2)** you will probably face with error from maven build that says there is **no secure connection to repo**. 
+When starting JAVA image build from **Developer Catalog (e.g JBoss EAP 7.2)** you will probably face with error from maven build that says there are **no secure connection to repo**. 
 - To solve this problem you can make **your own builder image** putting your company's proxy certificate in it, but in the end you will not get to use **Red Hat's official images** and updates to those images. You will have to update your own images always . 
 
 ### Initial Script to trust company's CA certificates
@@ -75,6 +75,9 @@ keytool -importcert -noprompt -storepass changeit -file /tmp/cert2.crt -alias ce
  
 ![https://github.com/burhanuguz/openshift-java-s2i-behind-proxy/blob/master/pictures/7.png](https://github.com/burhanuguz/openshift-java-s2i-behind-proxy/blob/master/pictures/7.png)
 ![https://github.com/burhanuguz/openshift-java-s2i-behind-proxy/blob/master/pictures/8.png](https://github.com/burhanuguz/openshift-java-s2i-behind-proxy/blob/master/pictures/8.png)
+
+
+Using this method you get to use Red Hat's updated and supported image always. There is no need create a custom image for certificate and updating it always.
 
 ---
 ##### Resources
