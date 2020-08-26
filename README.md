@@ -1,0 +1,1 @@
+# openshift-java-s2i-behind-proxy
