@@ -33,8 +33,8 @@ It should be like that
 - In the building stage image will call for the script in this path **/usr/local/s2i/assemble**. 
   - What will we do is creating our own script and name it as **assemble**
   - In this script **cacerts** file that JVM's trust will be copied to **/tmp** path.
-  - **New CA certs will be placed in this new cacerts file** and with **-Djavax.net.ssl.trustStore=/tmp/cacerts** command JVM's will trust our own CA's.
-- The **assemble** script will look like this
+  - **New CA certs will be inserted in this new cacerts file** and with **-Djavax.net.ssl.trustStore=/tmp/cacerts** argument JVM will trust our own CA's too.
+- The **assemble** script looks like this
 
 ```bash
 #!/bin/sh
