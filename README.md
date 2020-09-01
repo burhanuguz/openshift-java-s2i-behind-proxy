@@ -17,14 +17,14 @@ In this explanation you will have chance to use **Red Hat's own images**. These 
  In this example build will be done in **example project**(namespace).
  - Switch to **Developer Tab** and click to **From Catalog**
  
-![https://github.com/burhanuguz/openshift-java-s2i-behind-proxy/blob/master/pictures/1.png](https://github.com/burhanuguz/openshift-java-s2i-behind-proxy/blob/master/pictures/1.png)
+![1](https://user-images.githubusercontent.com/59168275/91821909-b90db700-ec3f-11ea-9f0d-2dd886bc7d4c.png)
  - Select **JBoss EAP 7.2** and then **Instantiate Template**
  
-![https://github.com/burhanuguz/openshift-java-s2i-behind-proxy/blob/master/pictures/2.png](https://github.com/burhanuguz/openshift-java-s2i-behind-proxy/blob/master/pictures/2.png)
-![https://github.com/burhanuguz/openshift-java-s2i-behind-proxy/blob/master/pictures/3.png](https://github.com/burhanuguz/openshift-java-s2i-behind-proxy/blob/master/pictures/3.png)
+![2](https://user-images.githubusercontent.com/59168275/91821916-bb701100-ec3f-11ea-862c-fb4055d41f7e.png)
+![3](https://user-images.githubusercontent.com/59168275/91821923-bdd26b00-ec3f-11ea-8e85-627d7c5905e5.png)
  - Scroll down and put **-Djavax.net.ssl.trustStore=/tmp/cacerts** argument to **Maven Additional Arguments** part and click **Create**.
  
-![https://github.com/burhanuguz/openshift-java-s2i-behind-proxy/blob/master/pictures/4.png](https://github.com/burhanuguz/openshift-java-s2i-behind-proxy/blob/master/pictures/4.png)
+![4](https://user-images.githubusercontent.com/59168275/91821926-be6b0180-ec3f-11ea-9381-40d1d1b186cc.png)
 ``` java
 It should be like that 
 -Dcom.redhat.xpaas.repo.jbossorg  -Djavax.net.ssl.trustStore=/tmp/cacerts
@@ -67,14 +67,14 @@ keytool -importcert -noprompt -storepass changeit -file /tmp/cert2.crt -alias ce
 - **The assemble script** should be put somewhere reachable from your Cluster. In this example **the assemble script** can be accessed via URL. Here is the official link for [s2i scripts and accessing them](https://docs.openshift.com/container-platform/4.5/builds/build-strategies.html#images-create-s2i-scripts_build-strategies)
 - To put the link select **Build tab** and click the **build** that created.
  
-![https://github.com/burhanuguz/openshift-java-s2i-behind-proxy/blob/master/pictures/5.png](https://github.com/burhanuguz/openshift-java-s2i-behind-proxy/blob/master/pictures/5.png)
+![5](https://user-images.githubusercontent.com/59168275/91821931-c034c500-ec3f-11ea-833a-2a5ba9add59a.png)
 - Select **YAML tab** and put the link of the directory contains the script to **spec.strategy.sourceStrategy.scripts** part.
  
-![https://github.com/burhanuguz/openshift-java-s2i-behind-proxy/blob/master/pictures/6.png](https://github.com/burhanuguz/openshift-java-s2i-behind-proxy/blob/master/pictures/6.png)
+![6](https://user-images.githubusercontent.com/59168275/91821938-c165f200-ec3f-11ea-8f3e-e4b3f9dd4f07.png)
 - After all those steps click **Start Build** and in the opened page select **Logs** and watch. You will see that maven won't give error and build process will be finished with success after that.
  
-![https://github.com/burhanuguz/openshift-java-s2i-behind-proxy/blob/master/pictures/7.png](https://github.com/burhanuguz/openshift-java-s2i-behind-proxy/blob/master/pictures/7.png)
-![https://github.com/burhanuguz/openshift-java-s2i-behind-proxy/blob/master/pictures/8.png](https://github.com/burhanuguz/openshift-java-s2i-behind-proxy/blob/master/pictures/8.png)
+![7](https://user-images.githubusercontent.com/59168275/91821942-c32fb580-ec3f-11ea-9d50-e939b05b7955.png)
+![8](https://user-images.githubusercontent.com/59168275/91821949-c4f97900-ec3f-11ea-9bd4-a2f98eb929a7.png)
 
 
 Using this method you get to use Red Hat's updated and supported image always. There is no need create a custom image for certificate and updating it always.
