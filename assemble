@@ -18,7 +18,7 @@ cp $JAVA_HOME/jre/lib/security/cacerts /tmp/cacerts
 
 chmod +w /tmp/cacerts
 
-keytool -importcert -noprompt -storepass changeit -file /tmp/cert1.crt -alias cert1 -keystore /tmp/cacerts
-keytool -importcert -noprompt -storepass changeit -file /tmp/cert2.crt -alias cert2 -keystore /tmp/cacerts
+keytool -importcert -noprompt -storepass changeit -keystore /tmp/cacerts -file /tmp/cert1.crt -alias cert1
+keytool -importcert -noprompt -storepass changeit -keystore /tmp/cacerts -file /tmp/cert2.crt -alias cert2
 
 /usr/local/s2i/assemble
