@@ -1,84 +1,105 @@
-# Openshift s2i behind Corporate Proxy (JBoss EAP 7.2 from Developer Catalog)
+# Openshift s2i behind Corporate Proxy (.NET Core from Developer Catalog)
 
 ## Prerequisites
 - Openshift Cluster behind proxy
 - Internal Image registry (to access the images you built in cluster)
 
 ## Overview
-When starting JAVA image build from **Developer Catalog (e.g JBoss EAP 7.2)** you will probably face with error from maven build that says there are **no secure connection to repo**. 
-- To solve this problem you can make **your own builder image** putting your company's proxy certificate in it, but in the end you will not get to use **Red Hat's official images** and updates to those images. You will have to update your own images always . 
+When behind proxy, **.NET Core** build from **Developer Catalog** will give error that nuget packages can not download because there are **no secure connection to repo**. 
 
-### Initial Script to trust company's CA certificates
-In this explanation you will have chance to use **Red Hat's own images**. These images have **s2i scripts** in it. **Red Hat gives option to change the s2i scripts**. 
-- The idea is to put an initial script first to **inject those company or other certificates to image** before anything actually starts. With that JVM will securely connect through proxy to maven repos and building operation will be success.
+- To solve this problem a custom image will be built. 
+- Whenever Red Hat's builder image is updated, build will be triggered. So the created builder image will always be updated  with **Red Hat's latest image**.
+### Creating Build Config
+1. First thing is to set certificates.
+```bash
+cat <<EOF > /tmp/ca-bundle.crt
+# First CA to be trusted
+-----BEGIN CERTIFICATE-----
+................................................................
+................................................................
+-----END CERTIFICATE-----
 
-> In this explanation JBoss EAP 7.2 from Developer Catalog will be used.
- 
- In this example build will be done in **example project**(namespace).
- - Switch to **Developer Tab** and click to **From Catalog**
- 
-![1](https://user-images.githubusercontent.com/59168275/91821909-b90db700-ec3f-11ea-9f0d-2dd886bc7d4c.png)
- - Select **JBoss EAP 7.2** and then **Instantiate Template**
- 
-![2](https://user-images.githubusercontent.com/59168275/91821916-bb701100-ec3f-11ea-862c-fb4055d41f7e.png)
-![3](https://user-images.githubusercontent.com/59168275/91821923-bdd26b00-ec3f-11ea-8e85-627d7c5905e5.png)
- - Scroll down and put **-Djavax.net.ssl.trustStore=/tmp/cacerts** argument to **Maven Additional Arguments** part and click **Create**.
- 
-![4](https://user-images.githubusercontent.com/59168275/91821926-be6b0180-ec3f-11ea-9381-40d1d1b186cc.png)
-``` java
-It should be like that 
--Dcom.redhat.xpaas.repo.jbossorg  -Djavax.net.ssl.trustStore=/tmp/cacerts
+# Second CA to be trusted
+-----BEGIN CERTIFICATE-----
+................................................................
+................................................................
+-----END CERTIFICATE-----
+
+# Third CA to be trusted
+-----BEGIN CERTIFICATE-----
+................................................................
+................................................................
+-----END CERTIFICATE-----
+EOF
 ```
-- The first build will start but it will fail because of proxy. 
-- In the building stage image will call for the script in this path **/usr/local/s2i/assemble**. 
-  - What will we do is creating our own script and name it as **assemble**
-  - In this script **cacerts** file that JVM's trust will be copied to **/tmp** path.
-  - **New CA certs will be inserted in this new cacerts file** and with **-Djavax.net.ssl.trustStore=/tmp/cacerts** argument JVM will trust our own CA's too.
-- The **assemble** script looks like this
+2. Create a **Config Map** that contains this certificate chain.
+```bash
+oc create configmap user-ca-bundle --from-file=ca-bundle.crt=/tmp/ca-bundle.crt
+```
+3. Create the Dockerfile.
+```bash
+cat <<EOF > Dockerfile
+FROM
+# Switch to root for package installs and copying files
+USER 0
+# Import corporation self signed certificate
+COPY ./ca-bundle.crt /etc/pki/ca-trust/source/anchors/
+RUN update-ca-trust
+# Run container by default as user with id 1001 (default)
+USER 1001
+EOF
+```
+4. Create **Build Config**. This **Build Config** will use **dockerstrategy** and newly created **Dockerfile** to build.
 
 ```bash
-#!/bin/sh
-
-cat <<EOF > /tmp/cert1.crt
------BEGIN CERTIFICATE-----
-................................................................
-................................................................
------END CERTIFICATE-----
-EOF
-
-cat <<EOF > /tmp/cert2.crt
------BEGIN CERTIFICATE-----
-................................................................
-................................................................
------END CERTIFICATE-----
-EOF
-
-cp $JAVA_HOME/jre/lib/security/cacerts /tmp/cacerts
-
-chmod +w /tmp/cacerts
-
-keytool -importcert -noprompt -storepass changeit -keystore /tmp/cacerts -file /tmp/cert1.crt -alias cert1
-keytool -importcert -noprompt -storepass changeit -keystore /tmp/cacerts -file /tmp/cert2.crt -alias cert2
-
-/usr/local/s2i/assemble
- 
+cat Dockerfile | oc new-build \
+   --name dotnet-21 \
+   --strategy docker \
+   --image-stream dotnet:2.1 \
+   --to dotnet:2.1-build \
+   --build-config-map user-ca-bundle:. \
+   --dockerfile -
 ```
-- The newly created **cacerts** file will have our **CA certs** in it.
-- **The assemble script** should be put somewhere reachable from your Cluster. In this example **the assemble script** can be accessed via URL. Here is the official link for [s2i scripts and accessing them](https://docs.openshift.com/container-platform/4.5/builds/build-strategies.html#images-create-s2i-scripts_build-strategies)
-- To put the link select **Build tab** and click the **build** that created.
- 
-![5](https://user-images.githubusercontent.com/59168275/91821931-c034c500-ec3f-11ea-833a-2a5ba9add59a.png)
-- Select **YAML tab** and put the link of the directory contains the script to **spec.strategy.sourceStrategy.scripts** part.
- 
-![6](https://user-images.githubusercontent.com/59168275/91821938-c165f200-ec3f-11ea-8f3e-e4b3f9dd4f07.png)
-- After all those steps click **Start Build** and in the opened page select **Logs** and watch. You will see that maven won't give error and build process will be finished with success after that.
- 
-![7](https://user-images.githubusercontent.com/59168275/91821942-c32fb580-ec3f-11ea-9d50-e939b05b7955.png)
-![8](https://user-images.githubusercontent.com/59168275/91821949-c4f97900-ec3f-11ea-9bd4-a2f98eb929a7.png)
-
-
-Using this method you get to use Red Hat's updated and supported image always. There is no need create a custom image for certificate and updating it always.
-
----
-##### Resources
-1. [Build Strategies](https://docs.openshift.com/container-platform/4.5/builds/build-strategies.html)
+5. Once **Build Config** is created, first build will be triggered and first image will be pushed to registry.
+6. Builder Image should be annotated, otherwise it will not be available in **Developer Catalog** to use. 
+7. Because ImageStream can not be annotated ImageStreamTag should be created as follows.
+```bash
+oc tag --alias=true openshift/dotnet:2.1-build openshift/dotnet:2.1-custom
+```
+ 8. ImageStreamTag should be annotate as follows,
+```bash
+oc annotate imagestreamtags.image.openshift.io dotnet:2.1-custom \
+supports="dotnet:2.1,dotnet" \
+sampleContextDir="app" \
+openshift.io/display-name=".NET Core 2.1" \
+sampleRef="dotnetcore-2.1" \
+version="2.1" \
+tags="builder,.net,dotnet,dotnetcore,rh-dotnet21" \
+sampleRepo="https://github.com/redhat-developer/s2i-dotnetcore-ex.git" \
+description=\
+"Build and run .NET Core 2.1 applications on RHEL 7. For more information \
+about using this builder image, including OpenShift considerations, see \
+https://github.com/redhat-developer/s2i-dotnetcore/tree/master/2.1/build/README.md." \
+iconClass="icon-dotnet"
+```
+- These annotations are extracted from original dotnet:2.1 ImageStreamTag.
+```bash
+oc get imagestreamtags.image.openshift.io -n openshift dotnet:2.1 -o json | jq '.metadata.annotations'
+```
+- The result is below
+```bash
+{
+  "description": "Build and run .NET Core 2.1 applications on RHEL 7. For more information about using this builder image, including OpenShift considerations, see https://github.com/redhat-developer/s2i-dotnetcore/tree/master/2.1/bui
+  "iconClass": "icon-dotnet",
+  "openshift.io/display-name": ".NET Core 2.1",
+  "sampleContextDir": "app",
+  "sampleRef": "dotnetcore-2.1",
+  "sampleRepo": "https://github.com/redhat-developer/s2i-dotnetcore-ex.git",
+  "supports": "dotnet:2.1,dotnet",
+  "tags": "builder,.net,dotnet,dotnetcore,rh-dotnet21",
+  "version": "2.1"
+}
+```
+![1](https://user-images.githubusercontent.com/59168275/94267939-16e2a580-ff45-11ea-9dc8-77e4efabcebd.png)
+8. After that go to Developer Tab and check if there is the custom image is there and can be used like below.
+![2](https://user-images.githubusercontent.com/59168275/94268981-ab99d300-ff46-11ea-8eff-f01aa620464c.png)
