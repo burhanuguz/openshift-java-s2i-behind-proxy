@@ -91,7 +91,7 @@ sampleRepo='https://github.com/jbossas/eap-quickstarts/openshift' \
 description='Red Hat JBoss EAP 7.2 S2I Image' \
 iconClass='icon-eap'
 ```
-- These annotations are extracted from original dotnet:2.1 ImageStreamTag.
+- These annotations are extracted from original jboss-eap72-openshift:1.2 ImageStreamTag.
 ```bash
 oc get imagestreamtags.image.openshift.io -n openshift jboss-eap72-openshift:1.2 -o json | jq '.metadata.annotations'
 ```
