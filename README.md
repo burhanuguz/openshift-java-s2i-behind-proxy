@@ -21,7 +21,7 @@ cat <<EOF > /tmp/cert1.crt
 -----END CERTIFICATE-----
 EOF
 
-cat <<EOF > /tmp/cert1.crt
+cat <<EOF > /tmp/cert2.crt
 # Second CA to be trusted
 -----BEGIN CERTIFICATE-----
 ................................................................
@@ -29,7 +29,7 @@ cat <<EOF > /tmp/cert1.crt
 -----END CERTIFICATE-----
 EOF
 
-cat <<EOF > /tmp/cert1.crt
+cat <<EOF > /tmp/cert3.crt
 # Third CA to be trusted
 -----BEGIN CERTIFICATE-----
 ................................................................
