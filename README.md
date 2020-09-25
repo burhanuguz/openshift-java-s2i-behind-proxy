@@ -110,4 +110,4 @@ oc get imagestreamtags.image.openshift.io -n openshift jboss-eap72-openshift:1.2
 }
 ```
 ![1](https://user-images.githubusercontent.com/59168275/94281082-da1faa00-ff56-11ea-8a77-412ca48634b0.png)
-
+9. It is not a Builder Image, so it is needed to create a new Template and include the newly created image in that Template.
